@@ -68,11 +68,11 @@ Your own code, structured as a node or nodelet, lives in additional ROS packages
 Now you can start to add your own code, usualy structured as a ROS node or nodelet. New code goes in the `asap/` folder and should be structured as a standard ROS [package](http://wiki.ros.org/Packages#:~:text=A%20ROS%20package%20is%20simply,and%20the%20unit%20of%20release.).
 
 
-## Moving to Hardware
+## Moving to hardware
 There are a few special considerations to make when moving to hardware. See the section below.
 
 
-## More Documentation
+## More documentation
 
 ["A Brief Guide to Astrobee's Flight Software"](https://github.com/albee/a-brief-guide-to-astrobee) is highly recommended reading if you are planning to use Astrobee for autonomy science tests. That guide covers many common questions like "how do I integrate my own controller?," "how does the Astrobee launchfile sequence work?," and "how do I cross-compile for hardware?".
 
