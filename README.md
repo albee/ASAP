@@ -6,7 +6,7 @@ ASAP was developed by the MIT Space Systems Lab by Keenan Albee, with contributi
 Latest tested compatibility: FSW 16.3
 
 
-## What does ASAP do
+## What does ASAP do?
 ASAP does the following to make your life easier when running code on the Astrobee hardware:
 
 - Manages node startup/shutdown *on top of existing Astrobee FSW*: for most uses, no modifiation of Astrobee's flight software is needed!
