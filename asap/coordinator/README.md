@@ -1,6 +1,6 @@
 # coordinator
 
-High-level test logic for controlling the ReSWARM experiments. Test calls are made
+High-level test logic for controlling ASAP experiments. Test calls are made
 using `execute_asap`, and the test run is operated from coordinator.
 
 `coordinator` nodelet : Handles operations between the planner, estimator, controller, etc. Versions exist for the primary and secondary Astrobees.

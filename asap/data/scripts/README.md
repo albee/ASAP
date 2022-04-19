@@ -1,21 +1,6 @@
-# scripts
+# data/scripts
 
-Useful scripts for viewing/creating reference trajectories.
+Useful scripts for data analysis and simulation.
 
-## Creating Reference Trajectories
-
-You can create your own reference trajectoies in Caroline's output format using
-
-`scripts/create_des_traj`
-
-`scripts/des_traj_to_caroline_format.m`
-
-See `main_traj_demo_script.m` for a complete usage example.
-
-## Visualizing Tumble Trajectories
-
-You can viusalize TumbleDock trajectories using
-
-`tumble_anim.m`
-
-See `main_traj_demo_script.m` for a complete usage example.
+- `reset_bias_all.sh`: reset bias for all simulation robots (recommended).
+- `reset_bias_both.sh`: reset bias for just the standard two simulation robots.
