@@ -14,7 +14,7 @@ ASAP does the following to make your life easier when running code on the Astrob
 - Provides GDS (ground station GUI) and command line interaces to start/stop your tests with minimal typing
 - Interfaces with Astrobee FSW to correctly transfer over impeller and vent control to guest science code
 - Provides a "test-based" template for you to easily add in autonomy experiments as new "tests"
-- Considers multi-agent commannding and hardware role-setting (like proper simulation namespacing)
+- Considers multi-agent commanding and hardware role-setting (like proper simulation namespacing)
 
 In short, ASAP takes care of low-level hardware and FSW interfacing messiness that gets in the way of just developing algorithms and testing them. ASAP is the product of a series of experiments and lessons learned during MIT's ROAM and ReSWARM ISS testing campaigns and has flight heritage from four ISS test sessions at the time of writing.
 
