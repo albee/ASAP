@@ -20,7 +20,7 @@ In short, ASAP takes care of low-level hardware and FSW interfacing messiness th
 
 
 ## When should I use ASAP?
-  ASAP is great if you are incorporating your code as a ROS node(let) and want to use Python/C++ and standard roscpp and rospy interfacing. It's especially helpful if you're doing robot autonomy experimentation, like planning, control, and localization. It's potentially unnecessary if you are aiming to use higher-level functions provided by NASA Ames, like moving from waypoint-to-waypoint using a default planner. Ames has documented that interface and API, Astrobee Android, (here)[https://github.com/nasa/astrobee_android.
+  ASAP is great if you are incorporating your code as a ROS node(let) and want to use Python/C++ and standard roscpp and rospy interfacing. It's especially helpful if you're doing robot autonomy experimentation, like planning, control, and localization. It's potentially unnecessary if you are aiming to use higher-level functions provided by NASA Ames, like moving from waypoint-to-waypoint using a default planner. Ames has documented that interface and API, Astrobee Android, [here](https://github.com/nasa/astrobee_android).
 
 
 ## Installation
