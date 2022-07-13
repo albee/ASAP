@@ -23,10 +23,5 @@ MIT Space Systems Laboratory
   <arg name="ground" default="false" />          <!-- Is this a ground test? (optional use) -->
   <arg name="sim" default="false" />             <!-- Is this a sim test? (optional use)    -->
 
-  <rosparam command="load" file="$(find execute_asap)/config/casadi_nmpc_params.yaml"/>
-
-  <node pkg="nodelet" type="nodelet" name="casadi_nmpc"
-        required="false" respawn="false"
-        args="standalone casadi_nmpc/CasadiNMPCNodelet"
-        output="$(arg output)"/>
+  <!-- Additional nodes to launch on the LLP would go here!-->
 </launch>

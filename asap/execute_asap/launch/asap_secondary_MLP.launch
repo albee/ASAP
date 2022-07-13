@@ -22,12 +22,11 @@ MIT Space Systems Laboratory
   <?comment launch-prefix="gdb -ex run --args" ?>
   <?comment launch-prefix="valgrind --leak-check=full" ?>
 
-  <!-- Load params for bumble -->
+  <!-- Load params for secondary -->
   <rosparam command="load" file="$(find execute_asap)/config/secondary_coord_params.yaml"/>
-  <!-- <rosparam command="load" file="$(find execute_asap)/config/casadi_nmpc_params.yaml"/> -->
 
   <node pkg="nodelet" type="nodelet" name="secondary_coordinator"
     required="false" respawn="false"
-    args="standalone SecondaryNodelet"
+    args="load coordinator/SecondaryNodelet secondary_coordinator"
     output="$(arg output)"/>
 </launch>

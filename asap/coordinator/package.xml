@@ -3,7 +3,7 @@
   <name>coordinator</name>
   <version>0.0.0</version>
   <description>
-    ReSwarm coordinators control logic.
+    Coordinator(s) for ASAP tests.
   </description>
   <license>
     Apache License, Version 2.0
@@ -20,8 +20,17 @@
   <depend>pluginlib</depend>
   <depend>actionlib</depend>
   <depend>tf</depend>
+  <depend>ff_util</depend>
   <depend>ff_msgs</depend>
+  <depend>msg_conversions</depend>
   <depend>geometry_msgs</depend>
+  <depend>ff_common</depend>
+  <depend>data</depend>
+  <depend>std_msgs</depend>
+  <depend>ff_nodelet</depend>
+  <depend>ff_flight</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
   </export>

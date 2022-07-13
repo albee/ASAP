@@ -8,6 +8,7 @@
     </description>
   </class>
 </library>
+
 <library path="lib/libSecondaryNodelet">
   <!-- Secondary coordinator nodelet -->
   <class name="SecondaryNodelet"

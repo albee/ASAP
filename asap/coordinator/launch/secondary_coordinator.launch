@@ -27,7 +27,7 @@
     <arg name="dds" default="false"/>              <!-- Should DDS be started     -->
     <arg name="output" default="screen"/>          <!-- Where nodes should log    -->
 
-    <rosparam command="load" file="$(find execute_asap)/config/primary_coord_params.yaml"/>
+    <rosparam command="load" file="$(find execute_asap)/config/secondary_coord_params.yaml"/>
 
     <arg name="llp" default="local" />              <!-- LLP IP address              -->
     <arg name="mlp" default="local" />              <!-- MLP IP address              -->
@@ -35,8 +35,8 @@
     <param name="/asap/sim" type="String" value="true"/>
     <param name="/asap/ground" type="String" value="false"/>
    
-    <node pkg="nodelet" type="nodelet" name="primary_coordinator"
+    <node pkg="nodelet" type="nodelet" name="secondary_coordinator"
         required="false" respawn="false"
-        args="standalone PrimaryNodelet"
+        args="standalone SecondaryNodelet"
         output="$(arg output)"/>
 </launch>

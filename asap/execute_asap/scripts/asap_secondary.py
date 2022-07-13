@@ -21,8 +21,8 @@ def secondary_execute_test(bee_topic_prefix, test_number=-1, ground='false', sim
     """
     Run a secondary test.
     """
-    rospy.set_param('/reswarm/ground', ground)  # options are: ['false', 'true']
-    rospy.set_param('/reswarm/sim', sim)  # options are: ['false', 'true']
+    rospy.set_param('/asap/ground', ground)  # options are: ['false', 'true']
+    rospy.set_param('/asap/sim', sim)  # options are: ['false', 'true']
 
     # Set initial position
     if (ground == "true"):
@@ -40,10 +40,10 @@ def secondary_execute_test(bee_topic_prefix, test_number=-1, ground='false', sim
 
 
 def set_params_IC(r_RI, r_TR, q_TR):
-    rospy.set_param('/reswarm/secondary/x_start', r_RI[0] + r_TR[0])
-    rospy.set_param('/reswarm/secondary/y_start', r_RI[1] + r_TR[1])
-    rospy.set_param('/reswarm/secondary/z_start', r_RI[2] + r_TR[2])
-    rospy.set_param('/reswarm/secondary/qx_start', q_TR[0])  # x
-    rospy.set_param('/reswarm/secondary/qy_start', q_TR[1])  # y
-    rospy.set_param('/reswarm/secondary/qz_start', q_TR[2])  # z
-    rospy.set_param('/reswarm/secondary/qw_start', q_TR[3])  # w
+    rospy.set_param('/asap/secondary/x_start', r_RI[0] + r_TR[0])
+    rospy.set_param('/asap/secondary/y_start', r_RI[1] + r_TR[1])
+    rospy.set_param('/asap/secondary/z_start', r_RI[2] + r_TR[2])
+    rospy.set_param('/asap/secondary/qx_start', q_TR[0])  # x
+    rospy.set_param('/asap/secondary/qy_start', q_TR[1])  # y
+    rospy.set_param('/asap/secondary/qz_start', q_TR[2])  # z
+    rospy.set_param('/asap/secondary/qw_start', q_TR[3])  # w

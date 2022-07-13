@@ -34,17 +34,9 @@ Every test has a test#() function available in case it is needed by asap.py
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/TwistWithCovariance.h>
 #include <geometry_msgs/Inertia.h>
-#include <reswarm_msgs/ReswarmStatusPrimary.h>
-#include <reswarm_msgs/ReswarmStatusSecondary.h>
-#include <reswarm_msgs/ReswarmTestNumber.h>
-#include <reswarm_msgs/ReswarmCasadiStatus.h>
-#include <reswarm_msgs/ReswarmUCBoundStatus.h>
-#include <reswarm_msgs/ReswarmInfoStatus.h>
-#include <reswarm_msgs/ReswarmPlannerStatus.h>
-#include <reswarm_dmpc/DMPCTestStatusStamped.h>
-#include <reswarm_msgs/RattleInfoPlanInstruct.h>
-#include <reswarm_msgs/RattleTestInstruct.h>
-#include <reswarm_msgs/ReswarmRattleStatus.h>
+#include <coordinator/StatusPrimary.h>
+#include <coordinator/StatusSecondary.h>
+#include <coordinator/TestNumber.h>
 
 // Actions
 #include <ff_msgs/ControlAction.h>
@@ -60,12 +52,12 @@ Every test has a test#() function available in case it is needed by asap.py
 #include <string.h>
 
 
-static std::string TOPIC_RESWARM_STATUS = "reswarm/status";
-static std::string TOPIC_RESWARM_TEST_NUMBER = "reswarm/test_number";
+static std::string TOPIC_ASAP_STATUS = "asap/status";
+static std::string TOPIC_ASAP_TEST_NUMBER = "asap/test_number";
 
 
 // base status struct (key information)
-struct BaseReswarmStatus {
+struct BaseStatus {
   int test_number = -2;
   std::string flight_mode = "nominal";
   bool test_finished = false;
@@ -86,7 +78,7 @@ class CoordinatorBase {
   // Base main functions
   void Run(ros::NodeHandle *nh);
  protected:
-  BaseReswarmStatus base_reswarm_status_;
+  BaseStatus base_status_;
 
   ros::NodeHandle MTNH;
   std::shared_ptr<std::thread> thread_;
@@ -96,7 +88,7 @@ class CoordinatorBase {
 
   ros::Subscriber sub_flight_mode_;
   ros::Subscriber sub_ekf_;
-  ros::Subscriber sub_reswarm_test_number_;
+  ros::Subscriber sub_test_number_;
 
   ros::ServiceClient serv_ctl_enable_;
 
@@ -113,7 +105,6 @@ class CoordinatorBase {
 
   // Stored status parameters
   std::string stored_control_mode_ = "track";  // stored control_mode, set by parameter inputs
-  int stored_gain_mode_ = 0;
 
   // Ekf state
   Eigen::Matrix<double, 16, 1> x_real_complete_;
@@ -122,11 +113,11 @@ class CoordinatorBase {
   void process_test_number();
   void get_flight_mode();
   
-  void publish_reswarm_status(const ros::TimerEvent&);  // templated for Primary or Secondary status
-  virtual void get_reswarm_status_msg(reswarm_msgs::ReswarmStatusPrimary& msg) {};
-  virtual void get_reswarm_status_msg(reswarm_msgs::ReswarmStatusSecondary& msg) {};
+  void publish_status(const ros::TimerEvent&);  // templated for Primary or Secondary status
+  virtual void get_status_msg(coordinator::StatusPrimary& msg) {};
+  virtual void get_status_msg(coordinator::StatusSecondary& msg) {};
 
-  void test_num_callback(const reswarm_msgs::ReswarmTestNumber::ConstPtr msg);
+  void test_num_callback(const coordinator::TestNumber::ConstPtr msg);
   void flight_mode_callback(const ff_msgs::FlightMode::ConstPtr msg);
   void ekf_callback(const ff_msgs::EkfState::ConstPtr msg);
 
@@ -137,37 +128,11 @@ class CoordinatorBase {
   void disable_default_ctl();
   void enable_default_ctl();
 
-  // define the reswarm_status callback for each robot
-  // virtual void reswarm_status_cb(const reswarm_msgs::ReswarmStatus::ConstPtr msg);
-
   // Virtual test list: to be replaced on each derived coordinator
   virtual void RunTest0(ros::NodeHandle *nh) {};
   virtual void RunTest1(ros::NodeHandle *nh) {};
   virtual void RunTest2(ros::NodeHandle *nh) {};
-  virtual void RunTest3(ros::NodeHandle *nh) {};
-  virtual void RunTest4(ros::NodeHandle *nh) {};
-  virtual void RunTest5(ros::NodeHandle *nh) {};
-  virtual void RunTest6(ros::NodeHandle *nh) {};
-  virtual void RunTest7(ros::NodeHandle *nh) {};
-  virtual void RunTest8(ros::NodeHandle *nh) {};
-  virtual void RunTest9(ros::NodeHandle *nh) {};
-  virtual void RunTest10(ros::NodeHandle *nh) {};
-  virtual void RunTest11(ros::NodeHandle *nh) {};
-  virtual void RunTest12(ros::NodeHandle *nh) {};
-  virtual void RunTest13(ros::NodeHandle *nh) {};
-  virtual void RunTest14(ros::NodeHandle *nh) {};
-  virtual void RunTest15(ros::NodeHandle *nh) {};
-  virtual void RunTest16(ros::NodeHandle *nh) {};
-  virtual void RunTest17(ros::NodeHandle *nh) {};
-  virtual void RunTest18(ros::NodeHandle *nh) {};
-  virtual void RunTest19(ros::NodeHandle *nh) {};
-  virtual void RunTest20(ros::NodeHandle *nh) {};
-  virtual void RunTest21(ros::NodeHandle *nh) {};
-  virtual void RunTest22(ros::NodeHandle *nh) {};
-  virtual void RunTest77(ros::NodeHandle *nh) {};
-  virtual void RunTest78(ros::NodeHandle *nh) {};
-
-  virtual void RunDebug(ros::NodeHandle *nh) {};
+  // add test definitions as necessary here
   // you can add more tests as desired in primary.h and secondary.h
 };
 
@@ -190,7 +155,7 @@ void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
 
   // Status publisher in separate thread
   status_timer_ = MTNH.createTimer(ros::Duration(0.2),
-    boost::bind(&CoordinatorBase::publish_reswarm_status, this, _1));  // send commands (5 Hz)
+    boost::bind(&CoordinatorBase::publish_status, this, _1));  // send commands (5 Hz)
 
   // Controller disabler in separate thread
   // ctl_disable_timer_ = MTNH.createTimer(ros::Duration(5.0),
@@ -200,7 +165,7 @@ void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
   ros::Rate sleep_rate(10.0);
 
   // (1) Start up and wait for test_number_
-  while (ros::ok() && base_reswarm_status_.test_number == -2) {  // startup test number
+  while (ros::ok() && base_status_.test_number == -2) {  // startup test number
     ros::spinOnce();
     sleep_rate.sleep();
   }
@@ -212,93 +177,20 @@ void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
 
   // (3) Execute test_number_ logic
   while (ros::ok()) { 
-    if (!base_reswarm_status_.test_finished) {
+    if (!base_status_.test_finished) {
       // Tests go below...
-      if (base_reswarm_status_.test_number == 0) {
+      if (base_status_.test_number == 0) {
         RunTest0(nh);
       }
-      if (base_reswarm_status_.test_number  == 1 ||
-          (base_reswarm_status_.test_number >= 100 && base_reswarm_status_.test_number <= 199) ||
-          (base_reswarm_status_.test_number >= 10000 && base_reswarm_status_.test_number <= 19999) ) {
+      else if (base_status_.test_number  == 1) {
         RunTest1(nh);
       }
-      else if(base_reswarm_status_.test_number  == 2 ||
-          (base_reswarm_status_.test_number >= 200 && base_reswarm_status_.test_number <= 299) ||
-          (base_reswarm_status_.test_number >= 20000 && base_reswarm_status_.test_number <= 29999)) {
+      else if(base_status_.test_number  == 2) {
         RunTest2(nh);
       }
-      else if(base_reswarm_status_.test_number  == 3 ||
-          (base_reswarm_status_.test_number >= 300 && base_reswarm_status_.test_number <= 399) ||
-          (base_reswarm_status_.test_number >= 30000 && base_reswarm_status_.test_number <= 39999)) {
-        RunTest3(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 4) {
-        RunTest4(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 5) {
-        RunTest5(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 6) {
-        RunTest6(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 7) {
-        RunTest7(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 8) {
-        RunTest8(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 9) {
-        RunTest9(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 10) {
-        RunTest10(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 11) {
-        RunTest11(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 12) {
-        RunTest12(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 13) {
-        RunTest13(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 14) {
-        RunTest14(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 15) {
-        RunTest15(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 16) {
-        RunTest16(nh);
-      }
-      else if(base_reswarm_status_.test_number  == 17) {
-        RunTest17(nh);
-      }
-      else if(base_reswarm_status_.test_number == 18) {
-        RunTest18(nh);
-      }
-      else if(base_reswarm_status_.test_number == 19) {
-        RunTest19(nh);
-      }
-      else if(base_reswarm_status_.test_number == 20) {
-        RunTest20(nh);
-      }
-      else if(base_reswarm_status_.test_number == 21) {
-        RunTest21(nh);
-      }
-      else if(base_reswarm_status_.test_number == 22) {
-        RunTest22(nh);
-      }
-      else if(base_reswarm_status_.test_number == 77) {  // debug test
-        RunDebug(nh);
-      }
-      else if(base_reswarm_status_.test_number == 78) {  // rattle replan test
-        RunTest78(nh);
-      }
-      else if (base_reswarm_status_.test_number >= 77000 && base_reswarm_status_.test_number <= 77999) {
-        RunTest77(nh);
-      }
-      base_reswarm_status_.test_finished = true;
+      // add additional test checks here
+
+      base_status_.test_finished = true;
     }
     ros::spinOnce();
     sleep_rate.sleep();
@@ -311,9 +203,9 @@ template <typename T>
 void CoordinatorBase<T>::get_flight_mode() {
   /* Get a nominal flight mode for desired test.
   */
-  if (base_reswarm_status_.test_number != -1 and base_reswarm_status_.test_number != 0) {  // NOT shutdown test number or checkout test
+  if (base_status_.test_number != -1 and base_status_.test_number != 0) {  // NOT shutdown test number or checkout test
     // create a nominal FlightMode
-    if (!ff_util::FlightUtil::GetFlightMode(flight_mode_, base_reswarm_status_.flight_mode)) {
+    if (!ff_util::FlightUtil::GetFlightMode(flight_mode_, base_status_.flight_mode)) {
       return;
     } 
   }
@@ -328,14 +220,14 @@ void CoordinatorBase<T>::get_flight_mode() {
 
 /* ************************************************************************** */
 template <typename T>
-void CoordinatorBase<T>::publish_reswarm_status(const ros::TimerEvent&) {
+void CoordinatorBase<T>::publish_status(const ros::TimerEvent&) {
   /**
-   * @brief Main coordinator of Base logic. Relies on get_reswarm_status_msg, defined in derived class.
+   * @brief Main coordinator of Base logic. Relies on get_status_msg, defined in derived class.
    * Uses either Primary or Secondary status logic.
    * 
    */
   T msg;
-  get_reswarm_status_msg(msg);
+  get_status_msg(msg);
   pub_status_.publish(msg);
 }
 
@@ -345,12 +237,12 @@ template<typename T>
 void CoordinatorBase<T>::process_test_number() {
   /**
    * @brief Process test number logic for parameters
-   * TODO: adapt this for reswarm parameter setting
+   * An example is provided here for processing individual digits of a test greater than 100.
    * 
    */
 
-  if (base_reswarm_status_.test_number > 100) {
-    std::string test_number_str = std::to_string(base_reswarm_status_.test_number);
+  if (base_status_.test_number > 100) {
+    std::string test_number_str = std::to_string(base_status_.test_number);
 
     // Parameter settings xx(xxxxxx)
     // controller
@@ -360,39 +252,25 @@ void CoordinatorBase<T>::process_test_number() {
     else if (test_number_str[2] == '2') {  // tube MPC
       stored_control_mode_ = "track_tube";
     }
-
-    // gains
-    if (test_number_str[3] == '1') {
-      stored_gain_mode_ = 0;
-    }
-    else if (test_number_str[3] == '2') {
-      stored_gain_mode_ = 1;
-    }
-    else if (test_number_str[3] == '3') {
-      stored_gain_mode_ = 2;
-    }
-    else if (test_number_str[3] == '4') {
-      stored_gain_mode_ = 3;
-    }
   }
 }
 
 
 /* ************************************************************************** */
 template<typename T>
-void CoordinatorBase<T>::test_num_callback(const reswarm_msgs::ReswarmTestNumber::ConstPtr msg) {
+void CoordinatorBase<T>::test_num_callback(const coordinator::TestNumber::ConstPtr msg) {
   /**
    * @brief Updates test numbers received from exec_asap
    * 
    */
-  base_reswarm_status_.test_number = msg->test_number;
-  if (base_reswarm_status_.test_number == -1) {
+  base_status_.test_number = msg->test_number;
+  if (base_status_.test_number == -1) {
     // Re-enable default controller
     enable_default_ctl();
 
     // Set flight mode to off
-    base_reswarm_status_.flight_mode = "off";
-    if (!ff_util::FlightUtil::GetFlightMode(flight_mode_, base_reswarm_status_.flight_mode)) {
+    base_status_.flight_mode = "off";
+    if (!ff_util::FlightUtil::GetFlightMode(flight_mode_, base_status_.flight_mode)) {
         return;
     }
     pub_flight_mode_.publish(flight_mode_);
@@ -404,13 +282,13 @@ void CoordinatorBase<T>::test_num_callback(const reswarm_msgs::ReswarmTestNumber
 template<typename T>
 void CoordinatorBase<T>::flight_mode_callback(const ff_msgs::FlightMode::ConstPtr msg) {
   /**
-   * @brief Callback for flight mode. And yes, still pancakes for Will (and Pedro).
+   * @brief Callback for flight mode.
    * 
    */
   flight_mode_name_ = msg->name;
 
   // kill ctl if it tries to turn on
-  if (base_reswarm_status_.default_control == false){
+  if (base_status_.default_control == false){
     auto serv_start = std::chrono::high_resolution_clock::now();
 
     // Disable the default controller so custom controller can run
@@ -479,9 +357,9 @@ template<typename T>
 void CoordinatorBase<T>::disable_default_ctl_callback(const ros::TimerEvent&) {
   /**
    * @brief Switch default controller off, repeatedly.
-   * @param base_reswarm_status.default_control is monitored for activation
+   * @param base_status.default_control is monitored for activation
    */
-  if (base_reswarm_status_.default_control == false){
+  if (base_status_.default_control == false){
     auto serv_start = std::chrono::high_resolution_clock::now();
 
     // Disable the default controller so custom controller can run
@@ -505,9 +383,9 @@ template<typename T>
 void CoordinatorBase<T>::disable_default_ctl() {
   /**
    * @brief Switch default controller off.
-   * @param base_reswarm_status.default_control is monitored for activation
+   * @param base_status.default_control is monitored for activation
    */
-  base_reswarm_status_.default_control = false;
+  base_status_.default_control = false;
 
   // Disable the default controller so custom controller can run
   std_srvs::SetBool srv;
@@ -526,7 +404,7 @@ void CoordinatorBase<T>::enable_default_ctl() {
   ROS_DEBUG_STREAM("[COORDINATOR]: Enabling default controller...");
 
   // Disable the default controller so tube-MPC can run
-  base_reswarm_status_.default_control = true;
+  base_status_.default_control = true;
 
   std_srvs::SetBool srv;
   srv.request.data = true;

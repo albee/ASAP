@@ -21,8 +21,5 @@ MIT Space Systems Laboratory
 
   <?comment launch-prefix="x-terminal-emulator -e gdb -ex run --args" ?>
 
-  <!-- <node pkg="nodelet" type="nodelet" name="casadi_nmpc"
-        required="false" respawn="false"
-        args="standalone casadi_nmpc/CasadiNMPCNodelet"
-        output="$(arg output)"/> -->
+  <!-- Additional nodes to launch on the LLP would go here!-->
 </launch>

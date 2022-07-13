@@ -20,8 +20,8 @@ import datetime
 # msgs
 from std_msgs.msg import String
 from std_srvs.srv import SetBool
-from reswarm_msgs.msg import ReswarmStatusPrimary, ReswarmStatusSecondary
-from reswarm_msgs.msg import ReswarmTestNumber
+from coordinator.msg import StatusPrimary, StatusSecondary
+from coordinator.msg import TestNumber
 from ff_msgs.msg import SignalState
 
 # For rosbag and CTL-C
@@ -53,10 +53,8 @@ class ASAP:
     BAG_PATH_SIM = asap_config.BAG_PATH_SIM
     ASAP_SECONDARY_LAUNCH_PATH = asap_config.ASAP_SECONDARY_LAUNCH_PATH
     ASAP_PRIMARY_LAUNCH_PATH = asap_config.ASAP_PRIMARY_LAUNCH_PATH
-    TOPICS_SIM_PRIMARY_EXTRA = asap_config.TOPICS_SIM_PRIMARY_EXTRA
     TOPICS_SIM_PRIMARY = asap_config.TOPICS_SIM_PRIMARY
     TOPICS_SIM_SECONDARY = asap_config.TOPICS_SIM_SECONDARY
-    TOPICS_HARDWARE_PRIMARY_EXTRA = asap_config.TOPICS_HARDWARE_PRIMARY_EXTRA
     TOPICS_HARDWARE_PRIMARY = asap_config.TOPICS_HARDWARE_PRIMARY
     TOPICS_HARDWARE_SECONDARY = asap_config.TOPICS_HARDWARE_SECONDARY
     ROSBAG_NAME = asap_config.ROSBAG_NAME
@@ -123,7 +121,7 @@ class ASAP:
         commands = []
 
         if self.my_role == 'primary':
-            if self.sim == "true":
+            if (self.sim == "true") and (arg_robot_name != "/"):
                 prefix = self.bee_topic_prefixes[0]
                 node_kill_list = self.NODE_LIST_SIM_PRIMARY
             else:
@@ -131,7 +129,7 @@ class ASAP:
                 node_kill_list = self.NODE_LIST_HARDWARE_PRIMARY
 
         elif self.my_role == 'secondary':
-            if self.sim == "true":
+            if self.sim == "true" and (arg_robot_name != "/"):
                 prefix = self.bee_topic_prefixes[1]
                 node_kill_list = self.NODE_LIST_SIM_SECONDARY
             else:
@@ -167,18 +165,12 @@ class ASAP:
             if (self.my_role == 'secondary'):
                 command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_secondary.bag " + self.TOPICS_SIM_SECONDARY + " __name:=roam_bagger"
             else:
-                if (test_number == 9999):  # TODO: add magic number to asap_config.py
-                    command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary_extra.bag " + self.TOPICS_SIM_PRIMARY_EXTRA + " __name:=roam_bagger"
-                else:
-                    command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary.bag " + self.TOPICS_SIM_PRIMARY + " __name:=roam_bagger"
+                command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary.bag " + self.TOPICS_SIM_PRIMARY + " __name:=roam_bagger"
         else:  # hardware
             if (self.my_role == 'secondary'):
                 command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_secondary.bag " + self.TOPICS_HARDWARE_SECONDARY + " __name:=roam_bagger"
             else:
-                if (test_number == 9999):  # TODO: add magic number to asap_config.py
-                    command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary_extra.bag " + self.TOPICS_HARDWARE_PRIMARY_EXTRA + " __name:=roam_bagger"
-                else:
-                    command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary.bag " + self.TOPICS_HARDWARE_PRIMARY + " __name:=roam_bagger"
+                command = "rosbag record --split --size=95 -O " + self.BAG_PATH + self.ROSBAG_NAME + "_primary.bag " + self.TOPICS_HARDWARE_PRIMARY + " __name:=roam_bagger"
 
         command = shlex.split(command)
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)  # so SIGINT is caught by the parent
@@ -266,7 +258,7 @@ class ASAP:
         self.rosbag_stop()
 
         # Wait to make sure flight mode is off and controller is default before
-        # killing RESWARM nodelets.
+        # killing ASAP nodelets.
         t0 = rospy.get_time()
         while self.default_control != "true" or self.flight_mode != "off":
             print('[EXECUTE_ASAP]: Waiting for coordinator to re-enable default control and set flight mode to off.')
@@ -277,7 +269,7 @@ class ASAP:
                 print('[EXECUTE_ASAP]: Timeout on default_control...')
                 break
 
-        # Kill RESWARM nodelets
+        # Kill ASAP nodelets
         print('[EXECUTE_ASAP]: Killing nodelets.')
         self.stop_nodelets()
         print('[EXECUTE_ASAP]: Nodelets killed.')
@@ -323,20 +315,21 @@ class ASAP:
         self.flight_mode = status_msg.flight_mode
 
         if self.my_role == "primary":
+            # TODO: this is currently filler to meet an arbitrary GDS rosparam length
             self.gds_telem = [
                 str(status_msg.test_finished),
                 str(status_msg.coord_ok),
                 str(status_msg.control_mode),
                 str(status_msg.regulate_finished),
-                str(status_msg.uc_bound_activated),
-                str(status_msg.uc_bound_finished),
-                str(status_msg.mrpi_finished),
-                str(status_msg.traj_sent),
-                str(status_msg.traj_finished),
-                str(status_msg.gain_mode),
-                str(status_msg.lqrrrt_activated),
-                str(status_msg.lqrrrt_finished),
-                str(status_msg.info_traj_send),
+                ".",
+                ".",
+                ".",
+                ".",
+                ".",
+                ".",
+                ".",
+                ".",
+                ".",
                 ".",
                 ".",
                 ".",
@@ -369,33 +362,13 @@ class ASAP:
                         [str(global_gds_param_count), str(ASAP_main.test_num), str(ASAP_main.flight_mode)] + self.gds_telem)
 
     def test_num_okay(self):
-        """ Only allow valid test numbers.
-        TODO: verify for reswarm
+        """ Only allow valid test numbers. Customize based on your own convention.
         """
         test_num = self.test_num
         str_test_num = str(test_num)
         OKAY = False
-        print("TESTING OK: ", test_num)
 
-        # unit tests (1-15) and the debug test, 77, and rattle's special test
-        if (test_num >= 0) and (test_num <= 22) or test_num == 77 or test_num == 78:
-            OKAY = True
-
-        #  RATTLE's parameter tests
-        if len(str_test_num) == 5:  # check digit-by-digit
-            if (int(str_test_num[0]) == 7) and (int(str_test_num[1]) == 7) and \
-               (int(str_test_num[2]) >= 0) and (int(str_test_num[2]) <= 1) and \
-               (int(str_test_num[3]) >= 0) and (int(str_test_num[3]) <= 5) and \
-               (int(str_test_num[4]) >= 0) and (int(str_test_num[4]) <= 3):
-                OKAY = True
-
-        # Pedro's parameter tests
-        if (test_num >= 100 and test_num <= 199) or \
-           (test_num >= 10000 and test_num <= 19999) or \
-           (test_num >= 200 and test_num <= 299) or \
-           (test_num >= 20000 and test_num <= 29999) or \
-           (test_num >= 300 and test_num <= 399) or \
-           (test_num >= 30000 and test_num <= 39999):
+        if (test_num >= 0):
             OKAY = True
 
         # stop test
@@ -419,20 +392,20 @@ class ASAP:
     def publish_test_num(self, test_num, my_role):
         """ Publish a test number for coordinator.
         """
-        msg = ReswarmTestNumber()
+        msg = TestNumber()
         msg.stamp = rospy.get_rostime()
         msg.test_number = test_num
         msg.role = my_role
         pub_test_number.publish(msg)
 
     def update_status_sub(self):
-        """ Subscriber for RESWARM status message (published by coordinators).
+        """ Subscriber for ASAP status message (published by coordinators).
         Make sure it is called AFTER bee_name obtained.
         """
         if self.my_role == 'primary':
-            rospy.Subscriber(status_msg_name, ReswarmStatusPrimary, self.status_callback)
+            rospy.Subscriber(status_msg_name, StatusPrimary, self.status_callback)
         elif self.my_role == 'secondary':
-            rospy.Subscriber(status_msg_name, ReswarmStatusSecondary, self.status_callback)
+            rospy.Subscriber(status_msg_name, StatusSecondary, self.status_callback)
         else:
             raise ValueError("Unknown Role")
 
@@ -518,29 +491,29 @@ if __name__ == "__main__":
         arg_robot_name = myargv[1]  # robot_prefix, SIMULATION ONLY!
         if arg_robot_name == "honey":
             ASAP_main.my_role = 'primary'
-            test_number_msg_name = "/honey/reswarm/test_number"
-            status_msg_name = "/honey/reswarm/status"
+            test_number_msg_name = "/honey/asap/test_number"
+            status_msg_name = "/honey/asap/status"
             signal_msg_name = "/honey/signals"
         elif arg_robot_name == "bumble":
             ASAP_main.my_role = 'secondary'
-            test_number_msg_name = "/bumble/reswarm/test_number"
-            status_msg_name = "/bumble/reswarm/status"
+            test_number_msg_name = "/bumble/asap/test_number"
+            status_msg_name = "/bumble/asap/status"
             signal_msg_name = "/bumble/signals"
         elif arg_robot_name == "queen":
             ASAP_main.my_role = 'primary'
-            test_number_msg_name = "/queen/reswarm/test_number"
-            status_msg_name = "/queen/reswarm/status"
+            test_number_msg_name = "/queen/asap/test_number"
+            status_msg_name = "/queen/asap/status"
             signal_msg_name = "/queen/signals"
         elif arg_robot_name == "/":
             ASAP_main.my_role = 'primary'
-            test_number_msg_name = "/reswarm/test_number"
-            status_msg_name = "/reswarm/status"
+            test_number_msg_name = "/asap/test_number"
+            status_msg_name = "/asap/status"
             signal_msg_name = "/signals"
         print("[EXECUTE_ASAP]: Using namespace -- " + arg_robot_name)
     except Exception:  # hardware
         ASAP_main.my_role = 'primary'
-        test_number_msg_name = "/reswarm/test_number"
-        status_msg_name = "/reswarm/status"
+        test_number_msg_name = "/asap/test_number"
+        status_msg_name = "/asap/status"
         signal_msg_name = "/signals"
         print("[EXECUTE_ASAP]: Using hardware namespace -- /.")
 
@@ -556,7 +529,7 @@ if __name__ == "__main__":
     rospy.Subscriber("/robot_name", String, ASAP_main.bee_name_callback)
 
     # publisher for test_number
-    pub_test_number = rospy.Publisher(test_number_msg_name, ReswarmTestNumber, queue_size=10)
+    pub_test_number = rospy.Publisher(test_number_msg_name, TestNumber, queue_size=10)
     # signal lights
     pub_signal = rospy.Publisher(signal_msg_name, SignalState, queue_size=1, latch=True)
 
