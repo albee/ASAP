@@ -1,5 +1,5 @@
 # ASAP (Astrobee Science Application Package)
-This is the ASAP interface, a framework for running autonomy science tests on the (Astrobee)[https://github.com/nasa/astrobee] robotic free-flyers. ASAP has on-orbit flight heritage over multiple test sessions on the International Space Station.
+This is the ASAP interface, a framework for running autonomy science tests on the [Astrobee](https://github.com/nasa/astrobee) robotic free-flyers. ASAP has on-orbit flight heritage over multiple test sessions on the International Space Station.
 
 ASAP was developed by the MIT Space Systems Lab by Keenan Albee, with contributions from Charles Oestreich, Pedro Roque, and Monica Ekal. 
 
