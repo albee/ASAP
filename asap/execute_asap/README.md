@@ -76,14 +76,6 @@ For the simulator, each robot defines its role in `execute_asap.py` via a robot 
 
 rosbags are automatically started for a new test. See `asap_config.py` for bag and many other configuration options.
 
-## Simulator Startup
-
-Start up the Astrobee sim with '/bumble' and '/honey' for the ISS:
-
-`roslaunch astrobee sim_reswarm.launch rviz:=true`
-
-You can set additional parameters on what to launch in `sim_reswarm.launch`.
-
 ## Adding Tests
 
 You can add tests in the `coordinator`, consult the README.
