@@ -7,7 +7,7 @@ string flight_mode
 bool test_finished
 bool coord_ok
 
-# StatusPrimary
-string control_mode  # did something break?
-bool regulate_finished
-string description  # for telemetry description
+# StatusPrimary (customize as needed!)
+string control_mode  # example: a control_mode specified by your tests
+bool regulate_finished  # example: a variable controlling regulation of the robots
+string description  # example: descriptive information for telemetry

@@ -131,14 +131,15 @@ class CoordinatorBase {
   // Virtual test list: to be replaced on each derived coordinator
   virtual void RunTest0(ros::NodeHandle *nh) {};
   virtual void RunTest1(ros::NodeHandle *nh) {};
-  virtual void RunTest2(ros::NodeHandle *nh) {};
-  // add test definitions as necessary here
-  // you can add more tests as desired in primary.h and secondary.h
+  // Add test definitions as necessary here!
+  // You can add more tests as desired in primary.h and secondary.h
 };
 
 
 /* ************************************************************************** */
-// Coordinator template implementation
+/*
+/* Coordinator template implementation
+/*
 /* ************************************************************************** */
 
 /* ************************************************************************** */
@@ -184,9 +185,6 @@ void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
       }
       else if (base_status_.test_number  == 1) {
         RunTest1(nh);
-      }
-      else if(base_status_.test_number  == 2) {
-        RunTest2(nh);
       }
       // add additional test checks here
 

@@ -1,4 +1,5 @@
 # Parameters for the primary coordinator node.
+# Includes examples related to a regulation task.
 /asap/primary/reg_time: 20.0  # seconds to wait after regulation is complete before starting test
 
 # Regulation error thresholds

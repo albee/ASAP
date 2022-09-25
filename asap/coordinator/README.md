@@ -7,18 +7,13 @@ using `execute_asap`, and the test run is operated from coordinator.
 
 ## Details
 
-* A base class is defined in `coordinator_base.tpp`. `primary.h` extends `CoordinatorBase` and implements virtual
+* A base class is defined in `coordinator_base.tpp`. `primary_nodelet.h` extends `CoordinatorBase` and implements virtual
 test functions. 
 
-* The resulting nodelet, instantiated by`primary_nodelet.cc` is the `primary_coordinator`, which takes in test numbers on `/reswarm/test_number`, and sends out
-`/reswarm/status` msgs which command other nodes. 
+* The resulting nodelet, instantiated by `primary_nodelet.cc` is the `primary_coordinator`, which takes in test numbers on `/asap/test_number`, and sends out
+`/asap/status` msgs which command other nodes. 
 
-* A number of methods are defined in `primary_*.hpp` files for specific tests. 
-  e.g., see `primary_tests.hpp` for test commanding methods specific to on-orbit assembly tests.
-
-Replace `primary` with `secondary` above for a second Astrobee.
-The nodelet_plugins.xml file had to be defined for this nodelet.
-The coordinator::CoordinatorNodelet class had to be created, extending FreeFlyerNodelet.
+Replace `primary` with `secondary` above for a second Astrobee. Note that the `nodelet_plugins.xml` file had to be defined for this nodelet.
 
 
 ## Adding Publishers, Subscribers, and Services to Coordinator
@@ -26,29 +21,34 @@ The coordinator::CoordinatorNodelet class had to be created, extending FreeFlyer
 New publishers, subscribers, and services monitored/advertised by `primary_coordinator` are created in `primary_nodelet.cc`,
 
 ```C++
-  sub_casadi_status_ = nh->subscribe<reswarm_msgs::ReswarmCasadiStatus>("reswarm/casadi_nmpc/status", 5,
-    boost::bind(&PrimaryNodelet::casadi_status_callback, this, _1));
+  sub_test_number_ = nh->subscribe<coordinator::TestNumber>(TOPIC_ASAP_TEST_NUMBER, 5,
+    boost::bind(&PrimaryNodelet::test_num_callback, this, _1));
 ```
 
-with declarations in `primary.h`. Callback definitions may be defined in any desired `primary_*_methods.hpp`.
+with declarations in `primary.h`. This essential subscriber gets the TestNumber from `execute_asap`, for example.
 
 
 ## Adding a New Test
 
-1. Create a `primary_tests.hpp` file (or use an existing one). This will be the header-only definition of specific methods for your test number. Add
-this new .hpp to `primary_nodelet.cc`,
+1. Add declarations of any new tests to the headers,
 
+* `coordinator.tpp`:
 ```C++
-  #include "coordinator/primary_tests.hpp"
+virtual void RunTest2(ros::NodeHandle *nh) {};
+```
+
+* `primary_nodelet.h`:
+```C++
+void RunTest2(ros::NodeHandle *nh) override;
 ```
 .
 
-2. Add an entry method for your test in `primary_tests.hpp`, for example,
+
+2. Add an entry method for your test in `primary_nodelet.cc`, for example,
 
 ```C++
-void PrimaryNodelet::RunTest0(ros::NodeHandle *nh){
-    NODELET_INFO_STREAM("[PRIMARY_COORD]: Congratulations, you have passed quick checkout. " 
-    "May your days be blessed with only warnings and no errors.");
+void PrimaryNodelet::RunTest2(ros::NodeHandle *nh){
+    NODELET_INFO_STREAM("[PRIMARY_COORD]: Congratulations, you have made a test. ");
     ros::Duration(5.0).sleep();
 
     NODELET_DEBUG_STREAM("[PRIMARY COORD]: ...test complete!");
@@ -56,18 +56,15 @@ void PrimaryNodelet::RunTest0(ros::NodeHandle *nh){
 };
 ```
 
-Also be sure to add the declaration to the headers,
+(Optional) If you'd like to place your test numbers in specific header files instead:
 
-* `coordinator.h`:
-```C++
-virtual void RunTest0(ros::NodeHandle *nh) {};
-```
+Create a `primary_tests.hpp` file (or use an existing one). This will be the header-only definition of specific methods for your test number. Add this new .hpp to `primary_nodelet.cc`,
 
-* `primary.h`:
 ```C++
-void RunTest0(ros::NodeHandle *nh) override;
+  #include "coordinator/primary_tests.hpp"
 ```
 .
+
 
 3. Finally, make sure your method actually gets called when its test number is received by adding it to 
 the main `primary_coordinator` loop in `coordinator_base.tpp`, 
@@ -75,8 +72,8 @@ the main `primary_coordinator` loop in `coordinator_base.tpp`,
 ```C++
 void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
   ...
-  if (base_reswarm_status_.test_number == 0) {
-    RunTest0(nh);
+  if (base_reswarm_status_.test_number == 2) {
+    RunTest2(nh);
   }
 ```
 .
@@ -86,4 +83,4 @@ void CoordinatorBase<T>::Run(ros::NodeHandle *nh) {
 
 ## Usage
 
-See `execute_asap` README for usage instructions.
+See `execute_asap` README.md for usage instructions.

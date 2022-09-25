@@ -4,7 +4,6 @@ The primary coordinator, which derives from CoorindatorBase and adds methods for
 */
 
 #include "coordinator/primary_nodelet.h"
-#include "coordinator/primary_tests.hpp"
 
 /* ************************************************************************** */
 void PrimaryNodelet::Initialize(ros::NodeHandle* nh) {
@@ -37,7 +36,7 @@ void PrimaryNodelet::Initialize(ros::NodeHandle* nh) {
   // services
   serv_ctl_enable_ = nh->serviceClient<std_srvs::SetBool>(SERVICE_GNC_CTL_ENABLE);
 
-  // tracking points
+  // Example of a parameter being used by the coordinator. These are regulation tracking points:
   try{
     std::vector<double> param_data;
     nh->getParam("/asap/primary/point_a_granite", param_data);
@@ -92,7 +91,7 @@ void PrimaryNodelet::load_params(){
   ros::param::get("/asap/ground", ground_str);
   ground_ = !std::strcmp(ground_str.c_str(), "true");  // convert to bool, 1 if it's true
   
-  // regulation
+  // Example of parameters used for a regulation task. Customize as needed:
   ros::param::getCached("/asap/primary/reg_time", reg_time_);
   ros::param::getCached("/asap/primary/x_start", x0_(0));
   ros::param::getCached("/asap/primary/y_start", x0_(1));
@@ -105,4 +104,50 @@ void PrimaryNodelet::load_params(){
   ros::param::getCached("/asap/primary/vel_reg_thresh", vel_reg_thresh_);
   ros::param::getCached("/asap/primary/att_reg_thresh", att_reg_thresh_);
   ros::param::getCached("/asap/primary/omega_reg_thresh", omega_reg_thresh_);
+}
+
+/************************************************************************/
+/* 
+/* TESTS
+/*
+/************************************************************************/
+
+/************************************************************************/
+void PrimaryNodelet::RunTest0(ros::NodeHandle *nh){
+    /* Test0: a simple example of a "sanity check" test.
+    */
+    NODELET_INFO_STREAM("[PRIMARY_COORD]: Congratulations, you have passed quick checkout. " 
+    "May your days be blessed with only warnings and no errors.");
+
+    disable_default_ctl();
+    ros::Duration(5.0).sleep();
+
+    NODELET_DEBUG_STREAM("[PRIMARY COORD]: ...test complete!");
+    base_status_.test_finished = true;
+};
+
+
+/************************************************************************/
+void PrimaryNodelet::RunTest1(ros::NodeHandle *nh){
+    /* Test1: a simple example of triggering a custom controller.
+    */
+    primary_status_.control_mode = "regulate";
+    ros::Duration(0.4).sleep(); // make sure controller gets the regulate settings before disabling default controller.
+
+    NODELET_DEBUG_STREAM("[PRIMARY COORD]: Disabling default controller...");
+    disable_default_ctl();
+
+    // Additional test commands go here
+    // Test commands can be anything you want! Talk to as many custom nodes as desired.
+
+    NODELET_DEBUG_STREAM("[PRIMARY COORD]: ...test complete!");
+    base_status_.test_finished = true;
+}
+
+
+/* ************************************************************************** */
+void PrimaryNodelet::control_mode_callback(const std_msgs::String::ConstPtr msg) {
+    /* A simple example of updating the primary_status_ msg.
+    */
+    primary_status_.control_mode = msg->data;
 }

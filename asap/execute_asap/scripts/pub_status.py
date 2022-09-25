@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Publish the reswarm/status msg for debugging.
-TODO: needs msg content updating for ReswarmStatus
+Publish the asap/status msg for debugging.
 """
 
 import rospy
-from reswarm_msgs.msg import ReswarmStatusPrimary
+from coordinator.msg import StatusPrimary
 import time
 
 
 def pub_status():
-    msg = ReswarmStatusPrimary()
+    msg = StatusPrimary()
     msg.stamp = rospy.get_rostime()
     msg.test_number = 0
     msg.coord_ok = True
@@ -20,7 +19,7 @@ def pub_status():
 
     time.sleep(0.5)
     print('msg sent...')
-    pub = rospy.Publisher('/reswarm/status', ReswarmStatusPrimary, queue_size=10, latch=True)
+    pub = rospy.Publisher('/asap/status', StatusPrimary, queue_size=10, latch=True)
     pub.publish(msg)
     rospy.spin()
 

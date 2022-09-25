@@ -67,6 +67,12 @@ void SecondaryNodelet::load_params(){
 }
 
 /************************************************************************/
+/* 
+/* TESTS
+/*
+/************************************************************************/
+
+/************************************************************************/
 void SecondaryNodelet::RunTest0(ros::NodeHandle *nh){
     NODELET_INFO_STREAM("[SECONDARY]: Congratulations, you have passed quick checkout. " 
     "May your days be blessed with only warnings and no errors.");

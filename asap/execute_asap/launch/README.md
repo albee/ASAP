@@ -3,8 +3,7 @@
 ## Behavior 
 
 The `execute_asap` node launches nodes/nodelets specific to the experiment upon recieving a test number from GDS.
-ALL nodes/nodelest are launched upon receiveing a valid test number, and each is designed to enter their main ROS loop, waiitng for instruction from
-the `coordinator`.
+ALL nodes/nodelest are launched upon receiveing a valid test number, and each is designed to enter their main ROS loop, waiitng for instruction from the `coordinator`.
 
 Either `asap_primary.launch` or `asap_secondary.launch` is called on test startup.
 From here, specific launch files for the robot's MLP and LLP actually launch each nodelet.

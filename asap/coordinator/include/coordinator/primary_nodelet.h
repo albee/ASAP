@@ -33,6 +33,8 @@ class PrimaryNodelet : public CoordinatorBase<coordinator::StatusPrimary>, publi
   std::string controller_ = "default";  // controller to send commands to
   std::string flight_mode_check_;
 
+  // These are example variables that might be used for a regulation task.
+  // Customize as needed:
   Eigen::Vector3d x0_;
   Eigen::Vector4d a0_;
 
@@ -62,10 +64,7 @@ class PrimaryNodelet : public CoordinatorBase<coordinator::StatusPrimary>, publi
   void RunTest1(ros::NodeHandle *nh) override;  // a very simple test
    
   void check_regulate();
-  void publish_dummy_uc_bound();
-
   void set_info_test_regulate_params();
-  void process_rattle_test_number(int test_number);
 
   void pub_reg_setpoint(Eigen::MatrixXd reg_setpoint_);
   void send_traj_to_controller(Eigen::MatrixXd eigen_x_des_traj);

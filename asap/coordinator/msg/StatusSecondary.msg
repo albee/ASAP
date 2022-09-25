@@ -7,4 +7,4 @@ string flight_mode
 bool test_finished
 bool coord_ok
 
-# StatusSecondary
+# StatusSecondary  (customize as needed!)

@@ -4,7 +4,8 @@
 This is the main entrypoint to running test scripts. Fill out the ASAP class and begin calling
 scripts using execute_test().
 
-Run using: pub_gds_topics.py.
+Once the node is running, trigger using the scirpt pub_gds_topics.py.
+See README.md for instructions.
 
 Keenan Albee and Charles Oestreich, 2021
 MIT Space Systems Laboratory
@@ -448,6 +449,7 @@ class ASAP:
             self.publish_test_num(self.test_num, self.my_role)
 
             # Update GDS ROS params (ground telemetry)
+            # TODO: this can be done more gracefully, but it has worked on hardware many times.
             param_set_count += 1
             if (param_set_count > 5):
                 param_set_count = 0

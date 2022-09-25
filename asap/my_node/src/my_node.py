@@ -20,7 +20,7 @@ class MyNode():
         # set timing parameters
         rospy.set_param("/mynode/test1", 1)
 
-        # tracking points
+        # Example parameters: tracking points. Modify as desired.
         self.POINT_A_GRANITE = rospy.get_param("/asap/primary/point_a_granite")
         self.POINT_A_ISS = rospy.get_param("/asap/primary/point_a_iss")
         self.POINT_B_GRANITE = rospy.get_param("/asap/primary/point_b_granite")
@@ -39,7 +39,7 @@ class MyNode():
         print("Check out coordinator/README.md.")
 
     def ekf_state_callback(self, msg):
-        """ Update latest estimated robot pose.
+        """ A useful example callback. Update latest estimated robot pose.
 
         x_est_ = [r(3) v(3) q(4) w(3)].T
         """

@@ -1,4 +1,5 @@
 # Parameters for the secondary coordinator node.
+# Includes examples related to a regulation task.
 
 # Regulation error thresholds
 /asap/secondary/pos_reg_thresh: 0.05
