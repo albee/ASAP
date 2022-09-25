@@ -1,5 +1,5 @@
 # ASAP (Astrobee Science Application Package)
-This is the ASAP interface, a framework for running autonomy science tests on the Astrobee robotic free-flyers developed by NASA Ames. ASAP has on-orbit flight heritage over multiple test sessions on the International Space Station.
+This is the ASAP interface, a framework for running autonomy science tests on the [Astrobee](https://github.com/nasa/astrobee) robotic free-flyers. ASAP has on-orbit flight heritage over multiple test sessions on the International Space Station.
 
 ASAP was developed by the MIT Space Systems Lab by Keenan Albee, with contributions from Charles Oestreich, Pedro Roque, and Monica Ekal. 
 
@@ -14,13 +14,13 @@ ASAP does the following to make your life easier when running code on the Astrob
 - Provides GDS (ground station GUI) and command line interaces to start/stop your tests with minimal typing
 - Interfaces with Astrobee FSW to correctly transfer over impeller and vent control to guest science code
 - Provides a "test-based" template for you to easily add in autonomy experiments as new "tests"
-- Considers multi-agent commannding and hardware role-setting (like proper simulation namespacing)
+- Considers multi-agent commanding and hardware role-setting (like proper simulation namespacing)
 
 In short, ASAP takes care of low-level hardware and FSW interfacing messiness that gets in the way of just developing algorithms and testing them. ASAP is the product of a series of experiments and lessons learned during MIT's ROAM and ReSWARM ISS testing campaigns and has flight heritage from four ISS test sessions at the time of writing.
 
 
 ## When should I use ASAP?
-ASAP is great if you are incorporating your code as a ROS node(let) and want to use Python/C++ and standard roscpp and rospy interfacing. It's especially helpful if you're doing robot autonomy experimentation, like planning, control, and localization. It's potentially unnecessary if you are aiming to use higher-level functions provided by NASA Ames, like moving from waypoint-to-waypoint using a default planner. Ames has documented that interface and API, Astrobee Android, here.
+  ASAP is great if you are incorporating your code as a ROS node(let) and want to use Python/C++ and standard roscpp and rospy interfacing. It's especially helpful if you're doing robot autonomy experimentation, like planning, control, and localization. It's potentially unnecessary if you are aiming to use higher-level functions provided by NASA Ames, like moving from waypoint-to-waypoint using a default planner. Ames has documented that interface and API, Astrobee Android, [here](https://github.com/nasa/astrobee_android).
 
 
 ## Installation
